@@ -48,9 +48,6 @@ SCRIPT_VERSION = "0.1"
 SCRIPT_LICENSE = "BSD"
 SCRIPT_DESCRIPTION = "Allows you to spam emojis based on :triggers:"
 
-SCRIPT_SETTINGS = {
-    'dbfile': "emojis-db.dat",
-}
 
 EMOJIS = {}
 
@@ -77,11 +74,11 @@ def reload_emojis():
 
     weechat.prnt("", "%s[%s] Reloading emojis from %s" \
             % (weechat.prefix("action"), SCRIPT_NAME,
-                SCRIPT_SETTINGS["dbfile"]))
+                weechat.config_get_plugin("dbfile")))
 
     EMOJIS = {}
 
-    load_emojis(SCRIPT_SETTINGS["dbfile"])
+    load_emojis(weechat.config_get_plugin("dbfile"))
 
 
 def transform_cb(data, bufferptr, command):
@@ -111,14 +108,7 @@ def transform_cb(data, bufferptr, command):
 def configuration_cb(data, option, value):
     """ Configuration change callback """
 
-    global SCRIPT_SETTINGS
-
-    pos = option.rfind('.')
-
-    if pos > 0:
-        key = option[pos+1:]
-        if key in SCRIPT_SETTINGS:
-            SCRIPT_SETTINGS[key] = value
+    reload_emojis()
 
     return weechat.WEECHAT_RC_OK
 
@@ -139,8 +129,14 @@ def main():
         "", # Charset (blank for utf-8)
     )
 
+    # Default values for settings
+    default_settings = {
+        'dbfile': os.path.join(
+            weechat.info_get("weechat_dir", ""), "emojis-db.dat")
+    }
+
     # Apply default configuration values if anything is unset
-    for option, default in SCRIPT_SETTINGS.items():
+    for option, default in default_settings.items():
         if not weechat.config_is_set_plugin(option):
             weechat.config_set_plugin(option, default)
 
@@ -151,16 +147,9 @@ def main():
 
     weechat.prnt("", "%s[%s] Loading emojis from %s" \
             % (weechat.prefix("action"), SCRIPT_NAME,
-                SCRIPT_SETTINGS["dbfile"]))
+                weechat.config_get_plugin("dbfile")))
 
-    # FIXME: throws IOError, it would be nice to handle this more
-    # gracefully.
-    dbpath = os.path.join(weechat.info_get("weechat_dir", ""),
-        SCRIPT_SETTINGS["dbfile"])
-
-    load_emojis(dbpath)
-
-    weechat.prnt("", "%s[%s] Emojis initialized, version" + SCRIPT_VERSION)
+    load_emojis(weechat.config_get_plugin("dbfile"))
 
 if __name__ == '__main__':
     main()
