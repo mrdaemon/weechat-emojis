@@ -28,6 +28,7 @@
 # SOFTWARE AND DOCUMENTATION, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 # DAMAGE.
 
+import os
 import re
 import sys
 
@@ -48,7 +49,7 @@ SCRIPT_LICENSE = "BSD"
 SCRIPT_DESCRIPTION = "Allows you to spam emojis based on :triggers:"
 
 SCRIPT_SETTINGS = {
-    'dbfile': 'emojis-db.dat',
+    'dbfile': "emojis-db.dat",
 }
 
 EMOJIS = {}
@@ -143,19 +144,24 @@ def main():
         if not weechat.config_is_set_plugin(option):
             weechat.config_set_plugin(option, default)
 
-    weechat.prnt("", "%s[%s] Loading emojis from %s" \
-            % (weechat.prefix("action"), SCRIPT_NAME,
-                SCRIPT_SETTINGS["dbfile"]))
-    # FIXME: throws IOError, it would be nice to handle this more
-    # gracefully.
-
-    load_emojis(SCRIPT_SETTINGS["dbfile"])
-
     # Hook callbacks
     weechat.hook_config("plugins.var.python." + SCRIPT_NAME + ".*",
         "configuration_cb", "")
     weechat.hook_command_run("/input return", "transform_cb", "")
 
+    weechat.prnt("", "%s[%s] Loading emojis from %s" \
+            % (weechat.prefix("action"), SCRIPT_NAME,
+                SCRIPT_SETTINGS["dbfile"]))
+
+    # FIXME: throws IOError, it would be nice to handle this more
+    # gracefully.
+    dbpath = os.path.join(weechat.info_get("weechat_dir", ""),
+        SCRIPT_SETTINGS["dbfile"])
+
+    load_emojis(dbpath)
+
     weechat.prnt("", "%s[%s] Emojis initialized, version" + SCRIPT_VERSION)
 
+if __name__ == '__main__':
+    main()
 
