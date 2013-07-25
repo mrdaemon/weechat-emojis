@@ -48,7 +48,7 @@ SCRIPT_VERSION = "0.1"
 SCRIPT_LICENSE = "BSD"
 SCRIPT_DESCRIPTION = "Allows you to spam emojis based on :triggers:"
 
-
+# Emojis cache
 EMOJIS = {}
 
 def load_emojis(dbfile):
@@ -61,31 +61,33 @@ def load_emojis(dbfile):
             if line.startswith(':'):
                 EMOJIS[line.rstrip()] = f.next().rstrip()
             else:
-                weechat.prnt("", "%sMalformed line in %s: %s" \
-                        % (weechat.prefix("error"), f.name, line))
+                weechat.prnt("", "%s%s: Malformed line in %s: %s" \
+                    % (weechat.prefix("error"), SCRIPT_NAME, f.name, line))
 
 
-    weechat.prnt("", "%s[%s] Loaded %d knifaisms." \
-            % (weechat.prefix("action"), SCRIPT_NAME, len(EMOJIS))
+        weechat.prnt("", "%s: Loaded %d knifaisms." \
+            % (SCRIPT_NAME, len(EMOJIS))
     )
 
 def reload_emojis():
+    """ Reload emojis from currently configured database """
     global EMOJIS
 
-    weechat.prnt("", "%s[%s] Reloading emojis from %s" \
-            % (weechat.prefix("action"), SCRIPT_NAME,
-                weechat.config_get_plugin("dbfile")))
+    weechat.prnt("", "%s: Reloading emojis from %s" \
+            % (SCRIPT_NAME, weechat.config_get_plugin("dbfile")))
 
+    # Clear out emojis before reload.
     EMOJIS = {}
 
     load_emojis(weechat.config_get_plugin("dbfile"))
+
 
 
 def transform_cb(data, bufferptr, command):
     """ Apply transformation to input line in specified buffer """
 
     if command == "/input return":
-        # Get input buffer. This is where we'll apply the
+        # Get input line from buffer. This is where we'll apply the
         # transformation right when the user hits enter. To be brutally
         # honest, I had no idea how else to make it happen.
         line = weechat.buffer_get_string(bufferptr, 'input')
@@ -94,13 +96,13 @@ def transform_cb(data, bufferptr, command):
         if line.startswith('/'):
             return weechat.WEECHAT_RC_OK
 
-        # Apply transform.
-        # FIXME: I am fairly certain this is not optimal.
+        # Apply transforms.
+        # This could probably be optimized.
         for key, value in EMOJIS.iteritems():
             if key in line:
                 line = line.replace(key, value)
 
-        # Poot transform line back into buffer's input line.
+        # Poot transformed line back into buffer's input line.
         weechat.buffer_set(bufferptr, 'input', line)
 
     return weechat.WEECHAT_RC_OK
@@ -108,13 +110,17 @@ def transform_cb(data, bufferptr, command):
 def configuration_cb(data, option, value):
     """ Configuration change callback """
 
+    weechat.prnt("", "%s: Configuration change detected." % (SCRIPT_NAME))
     reload_emojis()
+    return weechat.WEECHAT_RC_OK
 
+def reload_emojis_cb(data, bufferptr, args):
+    """ Command callback wrapper around reload_emojis() """
+
+    reload_emojis()
     return weechat.WEECHAT_RC_OK
 
 
-def completion():
-    pass
 
 def main():
     """ Entry point, initializes everything  """
@@ -145,11 +151,22 @@ def main():
         "configuration_cb", "")
     weechat.hook_command_run("/input return", "transform_cb", "")
 
-    weechat.prnt("", "%s[%s] Loading emojis from %s" \
-            % (weechat.prefix("action"), SCRIPT_NAME,
-                weechat.config_get_plugin("dbfile")))
+    # Command callbacks
+    weechat.hook_command("reloademojis", "reload emojis from file",
+        "","","", "reload_emojis_cb", "")
 
-    load_emojis(weechat.config_get_plugin("dbfile"))
+
+    dbfile = weechat.config_get_plugin("dbfile")
+
+    weechat.prnt("", "%s: Loading emojis from %s" % (SCRIPT_NAME, dbfile))
+
+    try:
+        load_emojis(dbfile)
+    except IOError as e:
+        weechat.prnt("",
+            "%s%s: Database file %s is missing or inaccessible." \
+                    % (weechat.prefix("error"), SCRIPT_NAME, dbfile))
+        raise e # TODO: handle this better instead of brutally aborting
 
 if __name__ == '__main__':
     main()
