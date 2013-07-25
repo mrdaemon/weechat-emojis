@@ -1,18 +1,35 @@
-The shittiest weechat plugin ever. Automagical emoji tags
+The shittiest weechat plugin ever. Automagical emojis!
 Because we all <3 Knifa on #glasnost.
-----------------------------------------------------------
+------------------------------------------------------------------------------
 
-Instructions:
+                        (ﾉﾟ-ﾟ)ﾉ☆ INSTRUCTIONS ★ヽ(°ｰ° )ﾉ
 
-1) Do the things
-2)...?
-28) Marvel at your ability to use things like :table:
+1) Copy/symlink script in ~/.weechat/python/emojis.py
+2) Copy/symlink emojis database in ~/.weechat/emojis-db.py
+3) /script load emojis.py
+4) Marvel at your ability to use things like :table:
+
+Optional:
+
+Symlink into ~/.weechat/python/autoload to load automatically
+
+You can configure an arbitrary path for the emojis database:
+  /set plugins.var.python.emojis.dbfile /path/to/emojis-db.dat
+
+You can reload the emojis using
+  /reloademojis
 
 You may add your own to the database, format is:
 
   :trigger:
-  smiley
+  emoji
 
 Your trigger MUST begin with ':'.
 
+The format is compatible with irssi-emojis and the mirc variant from
+Daniel Callander (Knifa).
 
+                   (ノ゜o゜)ノ　　　　●～*　　　　　Σ(゜д゜)
+     ATTENTION: This is a preliminary port of the irssi analogue found at:
+                    https://github.com/mrdaemon/irssi-emojis
+  It may not be as featureful at the moment, but the basics work, and sanely.
