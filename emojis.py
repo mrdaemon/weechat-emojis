@@ -29,8 +29,8 @@
 # DAMAGE.
 
 import os
-import re
 import sys
+import re
 
 # I'm sorry.
 try:
@@ -50,6 +50,16 @@ SCRIPT_DESCRIPTION = "Allows you to spam emojis based on :triggers:"
 
 # Emojis cache
 EMOJIS = {}
+
+def decode(s):
+    if isinstance(s, str):
+        s = s.decode('utf-8')
+    return s
+
+def encode(u):
+    if isinstance(u, unicode):
+        u = u.encode('utf-8')
+    return u
 
 def load_emojis(dbfile):
     """ Load emojis from file """
@@ -81,7 +91,6 @@ def reload_emojis():
     load_emojis(weechat.config_get_plugin("dbfile"))
 
 
-
 def transform_cb(data, bufferptr, command):
     """ Apply transformation to input line in specified buffer """
 
@@ -106,6 +115,39 @@ def transform_cb(data, bufferptr, command):
 
     return weechat.WEECHAT_RC_OK
 
+def complete_cb(data, bufferptr, command):
+    """ Apply transformation to input line in specified buffer """
+
+    if command != "/input complete_next":
+        return weechat.WEECHAT_RC_OK
+
+    line = decode(weechat.buffer_get_string(bufferptr, 'input'))
+    caret_pos = weechat.buffer_get_integer(bufferptr, 'input_pos')
+
+    match = re.search('(:\w+$)', line[:caret_pos])
+    if not match:
+        return weechat.WEECHAT_RC_OK
+
+    # tw = tabbed word
+    tw = match.group(0)
+    tw_length = len(tw)
+    tw_start = caret_pos - tw_length
+    tw_end = caret_pos
+
+    completion = ""
+    for key, value in EMOJIS.iteritems():
+        if key.startswith(tw):
+            completion = value
+            break
+
+    if completion:
+        line = line[:tw_start] + completion + line[tw_end:]
+        new_caret_pos = caret_pos - tw_length + len(decode(completion))
+        weechat.buffer_set(bufferptr, 'input', encode(line))
+        weechat.buffer_set(bufferptr, 'input_pos', str(new_caret_pos))
+
+    return weechat.WEECHAT_RC_OK
+
 def configuration_cb(data, option, value):
     """ Configuration change callback """
 
@@ -118,8 +160,6 @@ def reload_emojis_cb(data, bufferptr, args):
 
     reload_emojis()
     return weechat.WEECHAT_RC_OK
-
-
 
 def main():
     """ Entry point, initializes everything  """
@@ -149,11 +189,11 @@ def main():
     weechat.hook_config("plugins.var.python." + SCRIPT_NAME + ".*",
         "configuration_cb", "")
     weechat.hook_command_run("/input return", "transform_cb", "")
+    weechat.hook_command_run("/input complete*", "complete_cb", "")
 
     # Command callbacks
     weechat.hook_command("reloademojis", "reload emojis from file",
         "","","", "reload_emojis_cb", "")
-
 
     dbfile = weechat.config_get_plugin("dbfile")
 
