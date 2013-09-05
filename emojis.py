@@ -51,6 +51,9 @@ SCRIPT_DESCRIPTION = "Allows you to spam emojis based on :triggers:"
 # Emojis cache
 EMOJIS = {}
 
+# Decode required for proper calculation of string
+# length, and to avoid some bugs when concatenating
+# unicode/normal strings.
 def decode(s):
     if isinstance(s, str):
         s = s.decode('utf-8')
@@ -137,12 +140,12 @@ def complete_cb(data, bufferptr, command):
     completion = ""
     for key, value in EMOJIS.iteritems():
         if key.startswith(tw):
-            completion = value
+            completion = decode(value)
             break
 
     if completion:
         line = line[:tw_start] + completion + line[tw_end:]
-        new_caret_pos = caret_pos - tw_length + len(decode(completion))
+        new_caret_pos = caret_pos - tw_length + len(completion)
         weechat.buffer_set(bufferptr, 'input', encode(line))
         weechat.buffer_set(bufferptr, 'input_pos', str(new_caret_pos))
 
