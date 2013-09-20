@@ -66,8 +66,7 @@ def load_emojis(dbfile):
 
 
         weechat.prnt("", "%s: Loaded %d knifaisms." \
-            % (SCRIPT_NAME, len(EMOJIS))
-    )
+            % (SCRIPT_NAME, len(EMOJIS)))
 
 def reload_emojis():
     """ Reload emojis from currently configured database """

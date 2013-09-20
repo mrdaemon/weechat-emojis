@@ -4,8 +4,8 @@ Because we all <3 Knifa on #glasnost.
 
                         (ﾉﾟ-ﾟ)ﾉ☆ INSTRUCTIONS ★ヽ(°ｰ° )ﾉ
 
-1) Copy/symlink script in ~/.weechat/python/emojis.py
-2) Copy/symlink emojis database in ~/.weechat/emojis-db.py
+1) Copy/symlink script as ~/.weechat/python/emojis.py
+2) Copy/symlink emojis database as ~/.weechat/emojis-db.dat
 3) /script load emojis.py
 4) Marvel at your ability to use things like :table:
 
