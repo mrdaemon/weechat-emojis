@@ -29,8 +29,8 @@
 # DAMAGE.
 
 import os
-import sys
 import re
+import sys
 
 # I'm sorry.
 try:
@@ -54,12 +54,19 @@ EMOJIS = {}
 # Decode required for proper calculation of string
 # length, and to avoid some bugs when concatenating
 # unicode/normal strings.
+#
+# FIXME: I don't like that this is a thing. Weechat supposedly uses
+# UTF-8 internally exclusively, i'm not sure why we need to transit
+# through ascii.
+
 def decode(s):
+    """ Decode utf-8 to ascii """
     if isinstance(s, str):
         s = s.decode('utf-8')
     return s
 
 def encode(u):
+    """ Encode ascii as utf-8 """
     if isinstance(u, unicode):
         u = u.encode('utf-8')
     return u
@@ -163,6 +170,7 @@ def reload_emojis_cb(data, bufferptr, args):
 
     reload_emojis()
     return weechat.WEECHAT_RC_OK
+
 
 def main():
     """ Entry point, initializes everything  """
