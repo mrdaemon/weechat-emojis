@@ -29,6 +29,10 @@ Your trigger MUST begin with ':'.
 The format is compatible with irssi-emojis and the mirc variant from
 Daniel Callander (Knifa).
 
+NOTE: The script currently doesn't work over weechat relay clients. This is
+because it hooks the input buffer event explicitly, and as such will only work
+in the curses client.
+
                    (ノ゜o゜)ノ　　　　●～*　　　　　Σ(゜д゜)
      ATTENTION: This is a preliminary port of the irssi analogue found at:
                     https://github.com/mrdaemon/irssi-emojis
