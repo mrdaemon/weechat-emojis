@@ -59,17 +59,20 @@ EMOJIS = {}
 # UTF-8 internally exclusively, i'm not sure why we need to transit
 # through ascii.
 
+
 def decode(s):
     """ Decode utf-8 to ascii """
     if isinstance(s, str):
         s = s.decode('utf-8')
     return s
 
+
 def encode(u):
     """ Encode ascii as utf-8 """
     if isinstance(u, unicode):
         u = u.encode('utf-8')
     return u
+
 
 def load_emojis(dbfile):
     """ Load emojis from file """
@@ -81,19 +84,23 @@ def load_emojis(dbfile):
             if line.startswith(':'):
                 EMOJIS[line.rstrip()] = f.next().rstrip()
             else:
-                weechat.prnt("", "%s%s: Malformed line in %s: %s" \
+                weechat.prnt(
+                    "",
+                    "%s%s: Malformed line in %s: %s"
                     % (weechat.prefix("error"), SCRIPT_NAME, f.name, line))
 
-
-        weechat.prnt("", "%s: Loaded %d knifaisms." \
+        weechat.prnt(
+            "", "%s: Loaded %d knifaisms."
             % (SCRIPT_NAME, len(EMOJIS)))
+
 
 def reload_emojis():
     """ Reload emojis from currently configured database """
     global EMOJIS
 
-    weechat.prnt("", "%s: Reloading emojis from %s" \
-            % (SCRIPT_NAME, weechat.config_get_plugin("dbfile")))
+    weechat.prnt(
+        "", "%s: Reloading emojis from %s"
+        % (SCRIPT_NAME, weechat.config_get_plugin("dbfile")))
 
     # Clear out emojis before reload.
     EMOJIS = {}
@@ -124,6 +131,7 @@ def transform_cb(data, bufferptr, command):
         weechat.buffer_set(bufferptr, 'input', line)
 
     return weechat.WEECHAT_RC_OK
+
 
 def complete_cb(data, bufferptr, command):
     """ Apply transformation to input line in specified buffer """
@@ -158,12 +166,14 @@ def complete_cb(data, bufferptr, command):
 
     return weechat.WEECHAT_RC_OK
 
+
 def configuration_cb(data, option, value):
     """ Configuration change callback """
 
     weechat.prnt("", "%s: Configuration change detected." % (SCRIPT_NAME))
     reload_emojis()
     return weechat.WEECHAT_RC_OK
+
 
 def reload_emojis_cb(data, bufferptr, args):
     """ Command callback wrapper around reload_emojis() """
@@ -181,8 +191,8 @@ def main():
         SCRIPT_VERSION,
         SCRIPT_LICENSE,
         SCRIPT_DESCRIPTION,
-        "", # Shutdown callback function
-        "", # Charset (blank for utf-8)
+        "",  # Shutdown callback function
+        "",  # Charset (blank for utf-8)
     )
 
     # Default values for settings
@@ -197,14 +207,16 @@ def main():
             weechat.config_set_plugin(option, default)
 
     # Hook callbacks
-    weechat.hook_config("plugins.var.python." + SCRIPT_NAME + ".*",
+    weechat.hook_config(
+        "plugins.var.python." + SCRIPT_NAME + ".*",
         "configuration_cb", "")
     weechat.hook_command_run("/input return", "transform_cb", "")
     weechat.hook_command_run("/input complete*", "complete_cb", "")
 
     # Command callbacks
-    weechat.hook_command("reloademojis", "reload emojis from file",
-        "","","", "reload_emojis_cb", "")
+    weechat.hook_command(
+        "reloademojis", "reload emojis from file",
+        "", "", "", "reload_emojis_cb", "")
 
     dbfile = weechat.config_get_plugin("dbfile")
 
@@ -213,11 +225,12 @@ def main():
     try:
         load_emojis(dbfile)
     except IOError as e:
-        weechat.prnt("",
-            "%s%s: Database file %s is missing or inaccessible." \
-                    % (weechat.prefix("error"), SCRIPT_NAME, dbfile))
-        raise e # TODO: handle this better instead of brutally aborting
+        weechat.prnt(
+            "",
+            "%s%s: Database file %s is missing or inaccessible."
+            % (weechat.prefix("error"), SCRIPT_NAME, dbfile))
+        raise e  # TODO: handle this better instead of brutally aborting
+
 
 if __name__ == '__main__':
     main()
-
