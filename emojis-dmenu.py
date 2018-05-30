@@ -75,7 +75,8 @@ def main():
 
     if len(sys.argv) >= 2:
         # Yeah yeah, I know it should be done in bash
-        print(EMOJIS[sys.argv[1].split(' ', 1)[0]])
+        sys.stdout.write(EMOJIS[sys.argv[1].split(' ', 1)[0]])
+        sys.stdout.flush()
 
 
 if __name__ == '__main__':
